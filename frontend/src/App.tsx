@@ -7,6 +7,8 @@ import { CodeBrowser } from "./components/CodeBrowser";
 import { CliSimulator } from "./components/CliSimulator";
 import { TestMetrics, RawResultLog, RepositoryFile } from "./types";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "config" | "report" | "code" | "cli"
@@ -23,7 +25,7 @@ export default function App() {
     setIsRunning(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/run-test", {
+      const res = await fetch(`${API_BASE_URL}/api/run-test`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,7 +43,7 @@ export default function App() {
         setMetrics(data.metrics);
         setLogs([]);
 
-        const reportRes = await fetch("http://127.0.0.1:8000/api/report");
+        const reportRes = await fetch("`${API_BASE_URL}/api/report`");
 
         const reportData = await reportRes.json();
 
@@ -65,7 +67,7 @@ export default function App() {
   useEffect(() => {
     const loadConfig = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/config");
+        const res = await fetch("`${API_BASE_URL}/api/config`");
         const data = await res.json();
 
         if (data.success) {
@@ -82,7 +84,7 @@ export default function App() {
   useEffect(() => {
     const loadRepositoryFiles = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/files");
+        const response = await fetch(`${API_BASE_URL}/api/files`);
         const data = await response.json();
 
         if (data.success) {
