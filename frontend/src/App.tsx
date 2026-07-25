@@ -17,7 +17,7 @@ export default function App() {
   const [metrics, setMetrics] = useState<TestMetrics | null>(null);
   const [logs, setLogs] = useState<RawResultLog[]>([]);
   const [markdownReport, setMarkdownReport] = useState("");
-  const [files, setFiles] = useState<RepositoryFile[]>([]);
+  const [repositoryFiles, setRepositoryFiles] = useState<RepositoryFile[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   const handleRunTest = async () => {
@@ -80,12 +80,29 @@ if (res.ok && data.success) {
   loadConfig();
 }, []);
 
+useEffect(() => {
+  const loadRepositoryFiles = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/files");
+      const data = await response.json();
+
+      if (data.success) {
+        setRepositoryFiles(data.files);
+      }
+    } catch (error) {
+      console.error("Failed to load repository files:", error);
+    }
+  };
+
+  loadRepositoryFiles();
+}, []);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        files={files}
+        files={repositoryFiles}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -112,7 +129,9 @@ if (res.ok && data.success) {
           <ReportViewer markdownReport={markdownReport} />
         )}
 
-        {activeTab === "code" && <CodeBrowser files={files} />}
+        {activeTab === "code" && (
+  <CodeBrowser files={repositoryFiles} />
+)}
 
         {activeTab === "cli" && (
           <CliSimulator

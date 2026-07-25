@@ -8,6 +8,7 @@ from api.models import RunTestRequest
 from core.config_loader import ConfigLoader
 from core.reporter import Reporter
 from core.benchmark_service import run_benchmark
+from core.file_browser import load_repository_files
 
 app = FastAPI(
     title="Production REST API Testing Framework",
@@ -101,3 +102,10 @@ async def run_test(request: RunTestRequest):
             status_code=500,
             detail=str(exc),
         )
+
+@app.get("/api/files")
+async def get_repository_files():
+    return {
+        "success": True,
+        "files": load_repository_files(),
+    }
