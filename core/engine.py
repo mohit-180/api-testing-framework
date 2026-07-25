@@ -75,3 +75,24 @@ class AsyncTestEngine:
                 "is_timeout": is_timeout,
                 "error": error_msg,
             }
+
+    async def run(self) -> Dict[str, Any]:
+        semaphore = asyncio.Semaphore(self.concurrency)
+        results: List[Dict[str, Any]] = []
+
+        start_time = time.perf_counter()
+
+        async with aiohttp.ClientSession() as session:
+            tasks = []
+            for i in range(self.total_requests):
+                endpoint = self.endpoints[i % len(self.endpoints)]
+                tasks.append(self.execute_request(session, semaphore, endpoint))
+
+            results = await asyncio.gather(*tasks)
+
+        total_duration = time.perf_counter() - start_time
+
+        return {
+            "results": results,
+            "total_duration": total_duration,
+        }        

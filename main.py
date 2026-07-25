@@ -1,5 +1,4 @@
 import asyncio
-import aiohttp
 
 from core.config_loader import ConfigLoader
 from core.engine import AsyncTestEngine
@@ -10,16 +9,17 @@ async def main():
 
     engine = AsyncTestEngine(config)
 
-    semaphore = asyncio.Semaphore(1)
+    output = await engine.run()
 
-    async with aiohttp.ClientSession() as session:
-        result = await engine.execute_request(
-            session,
-            semaphore,
-            config["endpoints"][0],
-        )
+    results = output["results"]
 
-    print(result)
+    print(f"Total requests: {len(results)}")
+
+    successful = sum(1 for r in results if r["is_success"])
+
+    print(f"Successful requests: {successful}")
+
+    print(f"Total duration: {output['total_duration']:.2f} seconds")
 
 
 if __name__ == "__main__":
