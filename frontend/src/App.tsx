@@ -32,6 +32,7 @@ export default function App() {
         body: JSON.stringify({
           config_path: "config/test_plan.json",
           output_path: "reports/report.md",
+          config_yaml: configYaml,
         }),
       });
 

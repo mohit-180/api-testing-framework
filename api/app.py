@@ -54,13 +54,20 @@ async def health():
 @app.post("/api/run-test")
 async def run_test(request: RunTestRequest):
     try:
-        config = ConfigLoader(request.config_path).load()
+        if request.config_yaml is not None and request.config_yaml.strip():
+            config = ConfigLoader.from_yaml_string(
+                request.config_yaml
+                )
+        else:
+            config = ConfigLoader(
+                request.config_path
+                ).load()
 
         benchmark = await run_benchmark(
             config,
             request.output_path,
             )
-
+         
         return {
             "success": True,
             "metrics": benchmark["metrics"],
