@@ -16,3 +16,62 @@ class AsyncTestEngine:
         self.total_requests = config.get("number_of_requests", 50)
         self.timeout = config.get("timeout", 10.0)
         self.global_headers = config.get("headers", {})
+
+    async def execute_request(
+        self, session: aiohttp.ClientSession, semaphore: asyncio.Semaphore, endpoint: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        url = build_full_url(self.base_url, endpoint["path"])
+        method = endpoint.get("method", "GET").upper()
+
+        headers = {**self.global_headers, **endpoint.get("headers", {})}
+        body = endpoint.get("body")
+
+        timeout = aiohttp.ClientTimeout(total=self.timeout)
+
+        async with semaphore:
+            start_time = time.perf_counter()
+            status_code = None
+            is_success = False
+            is_timeout = False
+            error_msg = None
+
+            try:
+                kwargs: Dict[str, Any] = {"headers": headers, "timeout": timeout}
+                if body is not None and method in ["POST", "PUT", "PATCH"]:
+                    if isinstance(body, (dict, list)):
+                        kwargs["json"] = body
+                    else:
+                        kwargs["data"] = str(body)
+
+                async with session.request(method, url, **kwargs) as response:
+                    await response.read()
+                    elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+                    status_code = response.status
+                    is_success = 200 <= status_code < 400
+
+            except asyncio.TimeoutError:
+                elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+                is_timeout = True
+                error_msg = "Request Timeout"
+
+            except aiohttp.ClientConnectorError as e:
+                elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+                error_msg = f"Connection Refused / Failed: {e}"
+
+            except aiohttp.ClientError as e:
+                elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+                error_msg = f"Client Error: {e}"
+
+            except Exception as e:
+                elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+                error_msg = f"Unexpected Error: {e}"
+
+            return {
+                "endpoint_path": endpoint["path"],
+                "method": method,
+                "status_code": status_code,
+                "latency_ms": elapsed_ms,
+                "is_success": is_success,
+                "is_timeout": is_timeout,
+                "error": error_msg,
+            }

@@ -1,17 +1,26 @@
+import asyncio
+import aiohttp
+
 from core.config_loader import ConfigLoader
 from core.engine import AsyncTestEngine
 
 
-def main():
+async def main():
     config = ConfigLoader("config/test_plan.json").load()
 
     engine = AsyncTestEngine(config)
 
-    print("Engine initialized successfully!")
-    print(f"Base URL: {engine.base_url}")
-    print(f"Concurrency: {engine.concurrency}")
-    print(f"Requests: {engine.total_requests}")
+    semaphore = asyncio.Semaphore(1)
+
+    async with aiohttp.ClientSession() as session:
+        result = await engine.execute_request(
+            session,
+            semaphore,
+            config["endpoints"][0],
+        )
+
+    print(result)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
