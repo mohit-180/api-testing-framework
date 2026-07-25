@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { FileText, Copy, Check, Download } from "lucide-react";
 
 interface ReportViewerProps {
@@ -70,9 +72,13 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ markdownReport }) =>
 
       {/* Markdown Content Display */}
       <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 shadow-xl">
-        <pre className="bg-slate-950 p-6 rounded-lg border border-slate-800 text-xs font-mono text-slate-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
-          {markdownReport}
-        </pre>
+        <div className="bg-slate-950 p-6 rounded-lg border border-slate-800 overflow-x-auto">
+  <article className="prose prose-invert prose-sm max-w-none">
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      {markdownReport}
+    </ReactMarkdown>
+  </article>
+</div>
       </div>
     </div>
   );
