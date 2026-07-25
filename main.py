@@ -3,6 +3,7 @@ import asyncio
 from core.config_loader import ConfigLoader
 from core.engine import AsyncTestEngine
 from core.metrics import MetricsCollector
+from core.reporter import Reporter
 
 
 async def main():
@@ -17,7 +18,15 @@ async def main():
         output["total_duration"],
     ).compute()
 
-    print(metrics)
+    Reporter.print_terminal_summary(metrics, config)
+
+    Reporter.generate_markdown_report(
+        metrics,
+        config,
+        "reports/report.md",
+    )
+
+    print("\nReport generated successfully!")
 
 
 if __name__ == "__main__":
