@@ -2,6 +2,7 @@ import asyncio
 
 from core.config_loader import ConfigLoader
 from core.engine import AsyncTestEngine
+from core.metrics import MetricsCollector
 
 
 async def main():
@@ -11,15 +12,12 @@ async def main():
 
     output = await engine.run()
 
-    results = output["results"]
+    metrics = MetricsCollector(
+        output["results"],
+        output["total_duration"],
+    ).compute()
 
-    print(f"Total requests: {len(results)}")
-
-    successful = sum(1 for r in results if r["is_success"])
-
-    print(f"Successful requests: {successful}")
-
-    print(f"Total duration: {output['total_duration']:.2f} seconds")
+    print(metrics)
 
 
 if __name__ == "__main__":
