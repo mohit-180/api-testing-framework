@@ -1,5 +1,8 @@
-from fastapi import FastAPI, HTTPException
+import json
+import yaml
 
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from api.models import RunTestRequest
 from core.config_loader import ConfigLoader
 from core.engine import AsyncTestEngine
@@ -10,6 +13,35 @@ app = FastAPI(
     title="Production REST API Testing Framework",
     version="1.0.0",
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/config")
+async def get_config():
+    config_path = "config/test_plan.json"
+
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+
+    yaml_content = yaml.dump(
+        config,
+        sort_keys=False,
+        allow_unicode=True,
+    )
+
+    return {
+        "success": True,
+        "configYaml": yaml_content,
+    }
 
 
 @app.get("/")
