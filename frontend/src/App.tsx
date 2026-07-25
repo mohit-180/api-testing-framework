@@ -38,10 +38,22 @@ export default function App() {
 
       const data = await res.json();
 
-      if (res.ok && data.success) {
-        setMetrics(data.metrics);
-        setLogs([]);
-      } else {
+if (res.ok && data.success) {
+  setMetrics(data.metrics);
+  setLogs([]);
+
+  // Load the generated Markdown report
+  const reportRes = await fetch(
+    "http://127.0.0.1:8000/api/report"
+  );
+
+  const reportData = await reportRes.json();
+
+  if (reportRes.ok && reportData.success) {
+    setMarkdownReport(reportData.report);
+  }
+}
+      else {
         alert(data.detail || "Execution failed");
       }
     } catch (err: any) {

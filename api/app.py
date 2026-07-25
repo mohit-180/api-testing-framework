@@ -1,5 +1,6 @@
 import json
 import yaml
+import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,6 +41,25 @@ async def get_config():
     return {
         "success": True,
         "configYaml": yaml_content,
+    }
+
+
+@app.get("/api/report")
+async def get_report():
+    report_path = "reports/report.md"
+
+    if not os.path.exists(report_path):
+        raise HTTPException(
+            status_code=404,
+            detail="No report has been generated yet.",
+        )
+
+    with open(report_path, "r", encoding="utf-8") as f:
+        report = f.read()
+
+    return {
+        "success": True,
+        "report": report,
     }
 
 
