@@ -30,21 +30,14 @@ def parse_args():
 async def run(config_path: str, output_path: str):
     config = ConfigLoader(config_path).load()
 
-    engine = AsyncTestEngine(config)
-
-    output = await engine.run()
-
-    metrics = MetricsCollector(
-        output["results"],
-        output["total_duration"],
-    ).compute()
-
-    Reporter.print_terminal_summary(metrics, config)
-
-    Reporter.generate_markdown_report(
-        metrics,
+    benchmark = await run_benchmark(
         config,
         output_path,
+    )
+
+    Reporter.print_terminal_summary(
+        benchmark["metrics"],
+        config,
     )
 
     print(f"\nReport generated: {output_path}")

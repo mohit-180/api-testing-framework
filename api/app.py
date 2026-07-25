@@ -5,9 +5,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from api.models import RunTestRequest
 from core.config_loader import ConfigLoader
-from core.engine import AsyncTestEngine
-from core.metrics import MetricsCollector
 from core.reporter import Reporter
+from core.benchmark_service import run_benchmark
 
 app = FastAPI(
     title="Production REST API Testing Framework",
@@ -57,25 +56,18 @@ async def run_test(request: RunTestRequest):
     try:
         config = ConfigLoader(request.config_path).load()
 
-        engine = AsyncTestEngine(config)
-        output = await engine.run()
-
-        metrics = MetricsCollector(
-            output["results"],
-            output["total_duration"],
-        ).compute()
-
-        Reporter.generate_markdown_report(
-            metrics,
+        benchmark = await run_benchmark(
             config,
             request.output_path,
-        )
+            )
 
         return {
             "success": True,
-            "metrics": metrics,
+            "metrics": benchmark["metrics"],
+            "results": benchmark["results"],
             "report_path": request.output_path,
-        }
+}
+
 
     except Exception as exc:
         raise HTTPException(
