@@ -9,6 +9,7 @@ from core.config_loader import ConfigLoader
 from core.reporter import Reporter
 from core.benchmark_service import run_benchmark
 from core.file_browser import load_repository_files
+from core.terminal_formatter import build_terminal_output
 
 app = FastAPI(
     title="Production REST API Testing Framework",
@@ -88,12 +89,19 @@ async def run_test(request: RunTestRequest):
             config,
             request.output_path,
             )
+
+        terminal_output = build_terminal_output(
+            config=config,
+            metrics=benchmark["metrics"],
+            report_path=request.output_path,
+)
          
         return {
             "success": True,
             "metrics": benchmark["metrics"],
             "results": benchmark["results"],
             "report_path": request.output_path,
+            "terminal_output": terminal_output,
 }
 
 

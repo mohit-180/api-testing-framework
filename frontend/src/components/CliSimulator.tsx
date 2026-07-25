@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import { Terminal, Play, CornerDownLeft, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Terminal, Play, CornerDownLeft, CheckCircle2 } from "lucide-react";
 
 interface CliSimulatorProps {
-  onRunTest: () => void;
+  onRunTest: () => Promise<string[]>;
   isRunning: boolean;
 }
 
-export const CliSimulator: React.FC<CliSimulatorProps> = ({ onRunTest, isRunning }) => {
+export const CliSimulator: React.FC<CliSimulatorProps> = ({
+  onRunTest,
+  isRunning,
+}) => {
   const [commandInput, setCommandInput] = useState("python main.py");
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
     "Python 3.11.4 (main, Jun 20 2023, 14:12:00) [GCC 11.3.0] on linux",
@@ -27,60 +30,66 @@ export const CliSimulator: React.FC<CliSimulatorProps> = ({ onRunTest, isRunning
   ]);
 
   const handleExecuteCommand = (cmdStr?: string) => {
+    if (isRunning) return;
     const cmd = (cmdStr || commandInput).trim();
     if (!cmd) return;
 
-    const newLogs = [...terminalLogs, `$ ${cmd}`];
-
+    const newLogs = [...terminalLogs];
     if (cmd.startsWith("python main.py")) {
-      newLogs.push("[INFO] Loading test plan from: 'config/test_plan.yaml'");
-      newLogs.push("[INFO] Initializing engine with 15 concurrent workers for 150 total requests...");
-      newLogs.push("");
-      newLogs.push("============================================================");
-      newLogs.push("          API BENCHMARK & LOAD GENERATION REPORT          ");
-      newLogs.push("============================================================");
-      newLogs.push(" Target Base URL    : http://localhost:3000/api/mock");
-      newLogs.push(" Total Duration     : 1.248 seconds");
-      newLogs.push(" Concurrency Level  : 15 concurrent users");
-      newLogs.push(" Total Requests     : 150");
-      newLogs.push(" Successful (2xx/3xx): 148 (98.7%)");
-      newLogs.push(" Failed / Errors    : 2 (1.3%)");
-      newLogs.push(" Timeouts           : 0");
-      newLogs.push(" Throughput (RPS)   : 120.19 req/sec");
-      newLogs.push("------------------------------------------------------------");
-      newLogs.push(" LATENCY DISTRIBUTION:");
-      newLogs.push("   Min Latency       : 18.20 ms");
-      newLogs.push("   Avg Latency       : 42.50 ms");
-      newLogs.push("   Max Latency       : 185.10 ms");
-      newLogs.push("   p50 Percentile    : 38.00 ms");
-      newLogs.push("   p90 Percentile    : 62.40 ms");
-      newLogs.push("   p95 Percentile    : 85.10 ms");
-      newLogs.push("   p99 Percentile    : 142.30 ms");
-      newLogs.push("------------------------------------------------------------");
-      newLogs.push(" HTTP STATUS CODE BREAKDOWN:");
-      newLogs.push("   HTTP 200        :   145 requests ( 96.7%)");
-      newLogs.push("   HTTP 429        :     3 requests (  2.0%)");
-      newLogs.push("   HTTP 500        :     2 requests (  1.3%)");
-      newLogs.push("============================================================");
-      newLogs.push("");
-      newLogs.push("[INFO] Full markdown report written successfully to: 'reports/report.md'");
-      onRunTest();
+      setTerminalLogs((prev) => [
+        ...prev,
+        `$ ${cmd}`,
+        "",
+        "[INFO] Running benchmark...",
+        "",
+      ]);
+
+      setCommandInput("");
+
+      onRunTest()
+        .then((output) => {
+          setTerminalLogs((prev) => [...prev, ...output]);
+        })
+        .catch(() => {
+          setTerminalLogs((prev) => [
+            ...prev,
+            "[ERROR] Benchmark execution failed.",
+          ]);
+        });
+
+      return;
     } else if (cmd === "pytest") {
-      newLogs.push("============================== test session starts ==============================");
-      newLogs.push("platform linux -- Python 3.11.4, pytest-8.1.1, pluggy-1.4.0");
+      newLogs.push(`$ ${cmd}`);
+      newLogs.push(
+        "============================== test session starts ==============================",
+      );
+      newLogs.push(
+        "platform linux -- Python 3.11.4, pytest-8.1.1, pluggy-1.4.0",
+      );
       newLogs.push("rootdir: /api-testing-framework");
       newLogs.push("collected 10 items");
       newLogs.push("");
-      newLogs.push("tests/test_config.py .....                                               [ 50%]");
-      newLogs.push("tests/test_metrics.py ...                                                [ 80%]");
-      newLogs.push("tests/test_utils.py ..                                                   [100%]");
+      newLogs.push(
+        "tests/test_config.py .....                                               [ 50%]",
+      );
+      newLogs.push(
+        "tests/test_metrics.py ...                                                [ 80%]",
+      );
+      newLogs.push(
+        "tests/test_utils.py ..                                                   [100%]",
+      );
       newLogs.push("");
-      newLogs.push("============================== 10 passed in 0.24s ==============================");
+      newLogs.push(
+        "============================== 10 passed in 0.24s ==============================",
+      );
     } else if (cmd === "clear") {
       setTerminalLogs([]);
       return;
     } else {
-      newLogs.push(`bash: command not found: ${cmd}. Try 'python main.py' or 'pytest' or 'clear'`);
+      newLogs.push(`$ ${cmd}`);
+      newLogs.push(
+        `bash: command not found: ${cmd}. Try 'python main.py' or 'pytest' or 'clear'`,
+      );
     }
 
     setTerminalLogs(newLogs);
@@ -97,8 +106,10 @@ export const CliSimulator: React.FC<CliSimulatorProps> = ({ onRunTest, isRunning
             <span>Interactive CLI Terminal Simulation</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Test CLI invocation commands directly: <code className="text-emerald-400 font-mono">python main.py</code>,{" "}
-            <code className="text-emerald-400 font-mono">pytest</code>, <code className="text-emerald-400 font-mono">clear</code>.
+            Test CLI invocation commands directly:{" "}
+            <code className="text-emerald-400 font-mono">python main.py</code>,{" "}
+            <code className="text-emerald-400 font-mono">pytest</code>,{" "}
+            <code className="text-emerald-400 font-mono">clear</code>.
           </p>
         </div>
 
@@ -131,9 +142,13 @@ export const CliSimulator: React.FC<CliSimulatorProps> = ({ onRunTest, isRunning
               <div className="w-2.5 h-2.5 rounded-full bg-slate-700" />
               <div className="w-2.5 h-2.5 rounded-full bg-slate-700" />
             </div>
-            <span className="text-[10px] text-slate-500 font-mono ml-2">main.py --config config/test_plan.yaml</span>
+            <span className="text-[10px] text-slate-500 font-mono ml-2">
+              main.py --config config/test_plan.yaml
+            </span>
           </div>
-          <span className="text-[10px] text-slate-600 uppercase tracking-widest font-mono">Bash 5.2</span>
+          <span className="text-[10px] text-slate-600 uppercase tracking-widest font-mono">
+            Bash 5.2
+          </span>
         </div>
 
         <div className="flex-1 p-5 overflow-y-auto space-y-1 leading-relaxed">
@@ -144,10 +159,10 @@ export const CliSimulator: React.FC<CliSimulatorProps> = ({ onRunTest, isRunning
                 log.startsWith("$")
                   ? "text-emerald-400 font-semibold pt-1"
                   : log.includes("REPORT") || log.includes("==========")
-                  ? "text-amber-300"
-                  : log.includes("passed")
-                  ? "text-emerald-400 font-bold"
-                  : "text-slate-300"
+                    ? "text-amber-300"
+                    : log.includes("passed")
+                      ? "text-emerald-400 font-bold"
+                      : "text-slate-300"
               }`}
             >
               {log}

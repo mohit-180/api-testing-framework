@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Header } from "./components/Header";
 import { Dashboard } from "./components/Dashboard";
 import { ConfigEditor } from "./components/ConfigEditor";
@@ -6,7 +6,6 @@ import { ReportViewer } from "./components/ReportViewer";
 import { CodeBrowser } from "./components/CodeBrowser";
 import { CliSimulator } from "./components/CliSimulator";
 import { TestMetrics, RawResultLog, RepositoryFile } from "./types";
-
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
@@ -20,7 +19,7 @@ export default function App() {
   const [repositoryFiles, setRepositoryFiles] = useState<RepositoryFile[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
-  const handleRunTest = async () => {
+  const handleRunTest = async (): Promise<string[]> => {
     setIsRunning(true);
 
     try {
@@ -38,64 +37,64 @@ export default function App() {
 
       const data = await res.json();
 
-if (res.ok && data.success) {
-  setMetrics(data.metrics);
-  setLogs([]);
+      if (res.ok && data.success) {
+        setMetrics(data.metrics);
+        setLogs([]);
 
-  // Load the generated Markdown report
-  const reportRes = await fetch(
-    "http://127.0.0.1:8000/api/report"
-  );
+        const reportRes = await fetch("http://127.0.0.1:8000/api/report");
 
-  const reportData = await reportRes.json();
+        const reportData = await reportRes.json();
 
-  if (reportRes.ok && reportData.success) {
-    setMarkdownReport(reportData.report);
-  }
-}
-      else {
+        if (reportRes.ok && reportData.success) {
+          setMarkdownReport(reportData.report);
+        }
+
+        return data.terminal_output ?? [];
+      } else {
         alert(data.detail || "Execution failed");
+        return [];
       }
     } catch (err: any) {
       alert(`Network / Engine error: ${err.message}`);
+      return [];
     } finally {
       setIsRunning(false);
     }
   };
 
   useEffect(() => {
-  const loadConfig = async () => {
-    try {
-      const res = await fetch("http://127.0.0.1:8000/api/config");
-      const data = await res.json();
+    const loadConfig = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/config");
+        const data = await res.json();
 
-      if (data.success) {
-        setConfigYaml(data.configYaml);
+        if (data.success) {
+          setConfigYaml(data.configYaml);
+        }
+      } catch (err) {
+        console.error("Failed to load configuration:", err);
       }
-    } catch (err) {
-      console.error("Failed to load configuration:", err);
-    }
-  };
+    };
 
-  loadConfig();
-}, []);
+    loadConfig();
+  }, []);
 
-useEffect(() => {
-  const loadRepositoryFiles = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/files");
-      const data = await response.json();
+  useEffect(() => {
+    const loadRepositoryFiles = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/files");
+        const data = await response.json();
 
-      if (data.success) {
-        setRepositoryFiles(data.files);
+        if (data.success) {
+          setRepositoryFiles(data.files);
+        }
+      } catch (error) {
+        console.error("Failed to load repository files:", error);
       }
-    } catch (error) {
-      console.error("Failed to load repository files:", error);
-    }
-  };
+    };
 
-  loadRepositoryFiles();
-}, []);
+    loadRepositoryFiles();
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
@@ -129,9 +128,7 @@ useEffect(() => {
           <ReportViewer markdownReport={markdownReport} />
         )}
 
-        {activeTab === "code" && (
-  <CodeBrowser files={repositoryFiles} />
-)}
+        {activeTab === "code" && <CodeBrowser files={repositoryFiles} />}
 
         {activeTab === "cli" && (
           <CliSimulator
