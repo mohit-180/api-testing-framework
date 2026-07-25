@@ -1,12 +1,10 @@
-from core.config_loader import ConfigLoader
+from core.utils import calculate_percentile
 
 
 def main():
-    config = ConfigLoader("config/test_plan.yaml").load()
-
-    print("Configuration loaded successfully!")
-    print(f"Base URL: {config['base_url']}")
-    print(f"Endpoints: {len(config['endpoints'])}")
+    values = [100, 200, 300, 400, 500]
+    print(calculate_percentile(values, 50))
+    print(calculate_percentile(values, 90))
 
 
 if __name__ == "__main__":
