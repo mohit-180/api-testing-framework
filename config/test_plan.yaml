@@ -1,0 +1,41 @@
+name: "API Performance & Resilience Test Plan"
+base_url: "https://httpbin.org"
+timeout: 5.0
+concurrent_users: 15
+number_of_requests: 150
+
+headers:
+  User-Agent: "AsyncAPITester/1.0"
+  Accept: "application/json"
+
+endpoints:
+  - name: "Health Check Status"
+    path: "/status/200"
+    method: "GET"
+
+  - name: "Fetch User Details"
+    path: "/get"
+    method: "GET"
+    headers:
+      X-Client-ID: "client_app_99"
+
+  - name: "Submit Checkout Order"
+    path: "/post"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+    body:
+      cart_id: "cart_88321"
+      items_count: 3
+      payment_method: "credit_card"
+
+  - name: "Update Profile Settings"
+    path: "/put"
+    method: "PUT"
+    body:
+      theme: "dark"
+      email_alerts: true
+
+  - name: "Purge Session Token"
+    path: "/delete"
+    method: "DELETE"

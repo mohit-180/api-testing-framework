@@ -1,0 +1,54 @@
+{
+  "name": "E-Commerce Microservices Benchmark Plan",
+  "base_url": "https://httpbin.org",
+  "timeout": 5.0,
+  "concurrent_users": 10,
+  "number_of_requests": 100,
+  "headers": {
+    "User-Agent": "AsyncAPITester/1.0",
+    "Accept": "application/json"
+  },
+  "endpoints": [
+    {
+      "name": "Get Status OK",
+      "path": "/status/200",
+      "method": "GET"
+    },
+    {
+      "name": "Fetch Sample Data",
+      "path": "/get",
+      "method": "GET",
+      "headers": {
+        "X-Test-Header": "Benchmark"
+      }
+    },
+    {
+      "name": "Post Telemetry Payload",
+      "path": "/post",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "service": "order-processor",
+        "action": "simulate_load",
+        "timestamp": 1700000000
+      }
+    },
+    {
+      "name": "Update User Config",
+      "path": "/put",
+      "method": "PUT",
+      "body": {
+        "settings": {
+          "notifications": true
+        }
+      }
+    },
+    {
+      "name": "Delete Cache Key",
+      "path": "/delete",
+      "method": "DELETE"
+    }
+  ]
+}
