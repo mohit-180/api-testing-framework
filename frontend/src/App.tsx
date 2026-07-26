@@ -43,7 +43,7 @@ export default function App() {
         setMetrics(data.metrics);
         setLogs([]);
 
-        const reportRes = await fetch("`${API_BASE_URL}/api/report`");
+        const reportRes = await fetch(`${API_BASE_URL}/api/report`);
 
         const reportData = await reportRes.json();
 
@@ -67,7 +67,7 @@ export default function App() {
   useEffect(() => {
     const loadConfig = async () => {
       try {
-        const res = await fetch("`${API_BASE_URL}/api/config`");
+        const res = await fetch(`${API_BASE_URL}/api/config`);
         const data = await res.json();
 
         if (data.success) {
