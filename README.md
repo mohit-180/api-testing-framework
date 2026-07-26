@@ -57,6 +57,51 @@ Rather than acting as a simple API client, this project follows the architecture
 
 ---
 
+## 🚀 Live Deployment
+
+The application is deployed as a full-stack project with independent frontend and backend services.
+
+### Frontend
+- **Platform:** Vercel
+- **URL:** https://api-testing-framework-wheat.vercel.app
+
+### Backend
+- **Platform:** Render
+- **API Base URL:** https://api-testing-framework-1.onrender.com
+- **Swagger/OpenAPI:** https://api-testing-framework-1.onrender.com/docs
+
+### Deployment Architecture
+
+```text
+┌─────────────────────────┐
+│      React Frontend     │
+│        (Vercel)         │
+└────────────┬────────────┘
+             │ HTTPS
+             ▼
+┌─────────────────────────┐
+│     FastAPI Backend     │
+│        (Render)         │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Async Benchmark Engine  │
+│  HTTPX • AsyncIO • YAML │
+└─────────────────────────┘
+```
+
+### Production Features
+
+- Fully deployed React + TypeScript frontend
+- FastAPI REST API hosted on Render
+- Cross-Origin Resource Sharing (CORS) configured for production
+- Environment-based API configuration using Vite environment variables
+- Interactive Swagger/OpenAPI documentation
+- End-to-end benchmark execution from the browser
+- Live Markdown report generation
+- Repository explorer and CLI simulation
+
 ## Table of Contents
 
 - Features
